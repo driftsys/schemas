@@ -1,0 +1,47 @@
+name: Force deploy schemas
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  deploy:
+    name: Deploy to GitHub Pages
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prepare pages
+        run: ./scripts/publish
+
+      - name: Upload pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Verify published schemas
+        run: |
+          base="${{ steps.deployment.outputs.page_url }}"
+          fail=0
+          for f in $(find public -name 'v*.json'); do
+            url="${base}${f#public/}"
+            status=$(curl -sL -o /dev/null -w '%{http_code}' "$url")
+            if [ "$status" = "200" ]; then
+              echo "OK $url"
+            else
+              echo "FAIL $url (HTTP $status)"
+              fail=1
+            fi
+          done
+          exit $fail
