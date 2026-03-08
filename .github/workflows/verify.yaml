@@ -1,0 +1,33 @@
+name: Verify published schemas
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Check schema URLs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build schema list
+        run: ./scripts/publish
+
+      - name: Verify each schema is accessible
+        run: |
+          base="https://driftsys.github.io/shemas/"
+          fail=0
+          for f in $(find public -name 'v*.json'); do
+            url="${base}${f#public/}"
+            status=$(curl -sL -o /dev/null -w '%{http_code}' "$url")
+            if [ "$status" = "200" ]; then
+              echo "OK $url"
+            else
+              echo "FAIL $url (HTTP $status)"
+              fail=1
+            fi
+          done
+          exit $fail
