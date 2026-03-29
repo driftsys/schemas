@@ -138,9 +138,10 @@ table code { font-size: 0.8rem; }
 
 function renderMarkdown(md: string): string {
   // Remove badge lines ([![...](badge-url)](link-url))
-  md = md.replace(/^\s*\[!\[.*?\]\(https?:\/\/img\.shields\.io\/.*?\)\]\(.*?\)\s*$/gm, "");
+  const badgeUrl = /https?:\/\/(?:img\.shields\.io\/|github\.com\/[^)]*badge\.svg)/;
+  md = md.replace(new RegExp(`^\\s*\\[!\\[.*?\\]\\(${badgeUrl.source}.*?\\)\\]\\(.*?\\)\\s*$`, "gm"), "");
   // Also remove simple badges without outer link
-  md = md.replace(/^\s*!\[.*?\]\(https?:\/\/img\.shields\.io\/.*?\)\s*$/gm, "");
+  md = md.replace(new RegExp(`^\\s*!\\[.*?\\]\\(${badgeUrl.source}.*?\\)\\s*$`, "gm"), "");
 
   const lines = md.split("\n");
   const out: string[] = [];
@@ -374,8 +375,8 @@ async function main(): Promise<void> {
     // Agent markdown: rewrite README.md links to index.md, strip badges
     const agentMd = md
       .replace(/\(([^)]*?)README\.md\)/g, "($1index.md)")
-      .replace(/^\s*\[!\[.*?\]\(https?:\/\/img\.shields\.io\/.*?\)\]\(.*?\)\s*$/gm, "")
-      .replace(/^\s*!\[.*?\]\(https?:\/\/img\.shields\.io\/.*?\)\s*$/gm, "");
+      .replace(/^\s*\[!\[.*?\]\(https?:\/\/(?:img\.shields\.io\/|github\.com\/[^)]*badge\.svg).*?\)\]\(.*?\)\s*$/gm, "")
+      .replace(/^\s*!\[.*?\]\(https?:\/\/(?:img\.shields\.io\/|github\.com\/[^)]*badge\.svg).*?\)\s*$/gm, "");
 
     await writeFile(`${outPath}/index.html`, layoutHtml(page.title, html, page.depth, page.breadcrumbs));
     await writeFile(`${outPath}/index.md`, agentMd);

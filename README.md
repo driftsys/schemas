@@ -1,5 +1,6 @@
 # DriftSys Schema Contracts
 
+[![CI](https://github.com/driftsys/schemas/actions/workflows/ci.yaml/badge.svg)](https://github.com/driftsys/schemas/actions/workflows/ci.yaml)
 [![Pages](https://img.shields.io/badge/Pages-driftsys.github.io%2Fschemas-0072b2)](https://driftsys.github.io/schemas/)
 
 Validation schemas and agent contracts for DriftSys projects. Each schema is
