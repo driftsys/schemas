@@ -1,0 +1,19 @@
+{
+  "$schema": "https://driftsys.github.io/schemas/markspec/lock/v1.json",
+  "entries": {
+    "01HGW2Q8MNP3": {
+      "displayId": "SRS_BRK_0001",
+      "createdAt": "2024-01-15T10:23:45.123Z",
+      "createdBy": "alice@example.com",
+      "updatedAt": "2024-03-01T09:11:00.000Z",
+      "updatedBy": "bob@example.com",
+      "external": {
+        "jira": {
+          "ref": "PROJ-1234",
+          "syncedAt": "2024-03-01T09:00:00.000Z",
+          "direction": "export"
+        }
+      }
+    }
+  }
+}

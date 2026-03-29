@@ -1,0 +1,81 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://driftsys.github.io/schemas/markspec/lock/v1.json",
+  "title": "MarkSpec Lock",
+  "description": "Machine-managed lock file storing frozen traceability metadata by ULID.",
+  "type": "object",
+  "required": ["entries"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "format": "uri",
+      "description": "Schema URI for this lock file format."
+    },
+    "entries": {
+      "type": "object",
+      "description": "Entry metadata indexed by ULID.",
+      "minProperties": 0,
+      "additionalProperties": false,
+      "patternProperties": {
+        "^[0-9A-Z]{10,26}$": {
+          "type": "object",
+          "required": ["displayId"],
+          "additionalProperties": false,
+          "properties": {
+            "displayId": {
+              "type": "string",
+              "description": "Current display ID for the ULID."
+            },
+            "createdAt": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Creation timestamp (explicit or inferred)."
+            },
+            "createdBy": {
+              "type": "string",
+              "description": "Creation author (explicit or inferred)."
+            },
+            "updatedAt": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Most recent content update timestamp."
+            },
+            "updatedBy": {
+              "type": "string",
+              "description": "Most recent content update author."
+            },
+            "external": {
+              "type": "object",
+              "description": "External tool synchronization metadata by tool key.",
+              "additionalProperties": false,
+              "patternProperties": {
+                "^[a-z][a-z0-9-]{1,63}$": {
+                  "type": "object",
+                  "required": ["ref", "direction"],
+                  "additionalProperties": false,
+                  "properties": {
+                    "ref": {
+                      "type": "string",
+                      "description": "External requirement identifier in the target tool."
+                    },
+                    "syncedAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "description": "Timestamp of the last sync event."
+                    },
+                    "direction": {
+                      "type": "string",
+                      "enum": ["import", "export", "bidirectional"],
+                      "description": "Declared sync direction for this external mapping."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
