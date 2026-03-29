@@ -1,48 +1,33 @@
-# Project Manifest Schema
+# Project Schema Contract
 
 A minimal, flat project manifest. Describes what the project is and where it
-lives — nothing more. Build tools, CI stages, linting rules, and formatting
-preferences belong in their own config files.
-
-Field names align with Cargo.toml and package.json conventions. Available as
-`project.yaml`, `project.toml`, or `project.json` — when multiple are present,
-resolution order is YAML → TOML → JSON (first found wins).
+lives — nothing more. Validate payloads against this schema before processing.
 
 **Schema URL:** `https://driftsys.github.io/schemas/project/v1.json`
 
----
+## Discovery Protocol
 
-## Example
+1. Detect a `project.yaml`, `project.toml`, or `project.json` file.
+2. Resolution order: YAML → TOML → JSON (first found wins).
+3. Validate against `project/v1.json` before reading fields.
+4. Parse required fields (`name`, `version`) first.
+5. Parse optional fields second.
+6. Treat the schema as closed (`additionalProperties: false`).
 
-```yaml
-$schema: https://driftsys.github.io/schemas/project/v1.json
+## Schema Index
 
-name: com.company.dash
-description: Cross-platform SDK for the Dash service
-category: library
-version: 1.4.2
-license: Apache-2.0
-keywords:
-  - sdk
-  - cross-platform
-  - dash
-authors:
-  - Core Platform Team <core-platform@company.com>
-homepage: https://company.gitlab.io/dash
-bugs: https://jira.company.com/browse/DASH
-repository: https://gitlab.company.com/platform/dash-source
-upstream: https://github.com/nicegui/nicegui
+| Schema path        | What it describes | Stable key |
+| ------------------ | ----------------- | ---------- |
+| [v1.json](v1.json) | Project manifest  | `name`     |
 
-metadata:
-  department: platform-engineering
-  cost-center: CC-4200
+## Validation Contract
 
-config:
-  sonar:
-    project-key: dash-platform
-```
+Validate early so downstream logic stays predictable.
 
----
+1. Validation must happen before any business logic.
+2. Missing required fields (`name`, `version`) means hard failure.
+3. Unknown properties must be rejected (schema is closed).
+4. If schema fetch fails, return a schema-unavailable error.
 
 ## Fields
 
@@ -61,8 +46,7 @@ this value — for example, `@company/dash` for npm or `company-dash` for Cargo.
 ### `version` (required)
 
 Canonical version. Single source of truth — all ecosystem version files
-(`Cargo.toml`, `package.json`, `build.gradle.kts`, UPM `package.json`) are
-derived from this value.
+(`Cargo.toml`, `package.json`, `build.gradle.kts`) are derived from this value.
 
 ```yaml
 version: 1.4.2
@@ -73,13 +57,7 @@ version: 1.4.2
 Project classification. Accepts a single value or a list.
 
 ```yaml
-# single category
 category: library
-
-# multiple categories
-category:
-  - library
-  - binary
 ```
 
 Values:
@@ -104,18 +82,13 @@ One-line summary of the project.
 description: Cross-platform SDK for the Dash service
 ```
 
-Maps to `description` in Cargo.toml and package.json.
-
 ### `license`
 
-SPDX license expression. Supports dual licensing via SPDX syntax.
+SPDX license expression.
 
 ```yaml
 license: Apache-2.0
-license: MIT OR Apache-2.0
 ```
-
-Maps to `license` in Cargo.toml and package.json.
 
 ### `keywords`
 
@@ -125,10 +98,7 @@ Discovery tags.
 keywords:
   - sdk
   - cross-platform
-  - dash
 ```
-
-Maps to `keywords` in Cargo.toml and package.json.
 
 ### `authors`
 
@@ -137,58 +107,32 @@ Project authors in `Name <email>` format.
 ```yaml
 authors:
   - Core Platform Team <core-platform@company.com>
-  - Alice <alice@company.com>
 ```
-
-Maps to `authors` in Cargo.toml and `author`/`contributors` in package.json.
 
 ### `homepage`
 
 Project website or documentation portal URL.
 
-```yaml
-homepage: https://company.gitlab.io/dash
-```
-
-Maps to `homepage` in Cargo.toml and package.json.
-
 ### `bugs`
 
 Issue tracker URL.
-
-```yaml
-bugs: https://jira.company.com/browse/DASH
-```
-
-Maps to `bugs` in package.json.
 
 ### `repository`
 
 Source repository URL.
 
-```yaml
-repository: https://gitlab.company.com/platform/dash-source
-```
-
-Maps to `repository` in Cargo.toml and package.json.
-
 ### `upstream`
 
-Upstream repository for forks. Default tracked branch is `main`. Append
-`#branch` to track a different branch.
+Upstream repository for forks. Append `#branch` to track a specific branch.
 
 ```yaml
-# tracks main (default)
-upstream: https://github.com/nicegui/nicegui
-
-# tracks a specific branch
 upstream: https://github.com/nicegui/nicegui#develop
 ```
 
 ### `metadata`
 
 Freeform key-value block for org-specific information. The standard never reads
-or validates contents. Convention matches Cargo.toml `[package.metadata]`.
+or validates contents.
 
 ```yaml
 metadata:
@@ -196,62 +140,35 @@ metadata:
   cost-center: CC-4200
 ```
 
-Orgs can namespace their domain under a key:
-
-```yaml
-metadata:
-  acme:
-    kind: component
-    safety-level: QM
-    parent: com.company.dash-product
-```
-
 ### `config`
 
 Freeform key-value block for tooling configuration. Tools namespace themselves
-as keys to avoid collisions. Convention matches npm `config`.
+as keys.
 
 ```yaml
 config:
   sonar:
     project-key: dash-platform
-  renovate:
-    schedule: weekly
 ```
 
----
+## Failure Modes
 
-## Ecosystem Mapping
+- **unsupported-version** — schema version is not recognized. Stop processing.
+- **schema-unavailable** — schema URL cannot be fetched. Return error.
+- **validation-failed** — payload does not match schema. Reject payload.
 
-Tooling can derive ecosystem-specific fields from the manifest.
+## Version Policy
 
-| project.yaml  | Cargo.toml           | package.json                    |
-| ------------- | -------------------- | ------------------------------- |
-| `name`        | `name` (derived)     | `name` (derived: `@scope/name`) |
-| `description` | `description`        | `description`                   |
-| `version`     | `version`            | `version`                       |
-| `license`     | `license`            | `license`                       |
-| `keywords`    | `keywords`           | `keywords`                      |
-| `authors`     | `authors`            | `author` + `contributors`       |
-| `homepage`    | `homepage`           | `homepage`                      |
-| `bugs`        | —                    | `bugs`                          |
-| `repository`  | `repository`         | `repository`                    |
-| `metadata`    | `[package.metadata]` | (custom top-level keys)         |
-| `config`      | —                    | `config`                        |
+- Breaking changes create a new major version path (`v2.json`).
+- Non-breaking additions stay in the current major version.
+- Consumers should pin to a major version.
 
----
+## Quick Example
 
-## Design Decisions
+Input: `project.yaml`\
+Schema: `project/v1.json`
 
-| Decision                      | Rationale                                                                                                                                                         |
-| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Flat structure                | Every field visible in one glance. No nesting for a 12-field file.                                                                                                |
-| Ecosystem-aligned names       | `name`, `version`, `description`, `license`, `keywords`, `authors`, `homepage`, `bugs`, `repository` all match Cargo.toml and/or package.json. No new vocabulary. |
-| No quality/CI/tools sections  | Formatting, linting, CI stages, and tool versions have dedicated config files in every ecosystem. Duplicating them creates drift.                                 |
-| No lifecycle field            | Semver communicates lifecycle: `0.x` is incubation, `1.0+` is stable, deprecation is a final release plus notice.                                                 |
-| Reverse-domain `name`         | Follows UPM, Android `applicationId`, and Java/Gradle group conventions. Globally unique without a central registry.                                              |
-| `metadata` matches Cargo      | `[package.metadata]` is the established pattern for freeform, standard-invisible extension data.                                                                  |
-| `config` matches npm          | `config` in package.json is the established pattern for tooling configuration.                                                                                    |
-| `upstream` with `#branch`     | Follows the `url#ref` pattern from npm and git. Default is `main` when omitted.                                                                                   |
-| Three formats                 | YAML for readability (default), TOML for Rust familiarity, JSON for Node/TS familiarity. Same schema, developer's choice.                                         |
-| Schema URL outside the schema | `$schema` (YAML/JSON) and `#:schema` (TOML) are editor hints, not project data. Never required.                                                                   |
+1. Validate payload against schema.
+2. Parse `name` and `version` (required).
+3. Parse optional fields (`category`, `description`, `license`, etc.).
+4. Reject if unknown properties are present.

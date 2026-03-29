@@ -2,15 +2,5 @@
 set -euo pipefail
 
 root="$(cd "$(dirname "$0")/.." && pwd)"
-out="$root/public"
 
-rm -rf "$out"
-mkdir -p "$out"
-
-find "$root" -name 'v*.json' -not -path "$out/*" -not -path '*/.git/*' | while read -r f; do
-  rel="${f#"$root"/}"
-  mkdir -p "$out/$(dirname "$rel")"
-  cp "$f" "$out/$rel"
-done
-
-echo "Published to $out"
+deno run --allow-read --allow-write "$root/scripts/build-site.ts"

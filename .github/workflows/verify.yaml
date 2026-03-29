@@ -1,4 +1,4 @@
-name: Verify published schemas
+name: Verify published site
 
 on:
   workflow_dispatch:
@@ -8,20 +8,25 @@ permissions:
 
 jobs:
   verify:
-    name: Check schema URLs
+    name: Check published URLs
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build schema list
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Build site
         run: ./scripts/publish
 
-      - name: Verify each schema is accessible
+      - name: Verify URLs
         run: |
           base="https://driftsys.github.io/schemas/"
           fail=0
-          for f in $(find public -name 'v*.json'); do
-            url="${base}${f#public/}"
+
+          for path in index.html index.md project/index.html project/index.md markspec/index.html markspec/index.md; do
+            url="${base}${path}"
             status=$(curl -sL -o /dev/null -w '%{http_code}' "$url")
             if [ "$status" = "200" ]; then
               echo "OK $url"
@@ -30,4 +35,9 @@ jobs:
               fail=1
             fi
           done
+
+          for f in $(find public -name 'v*.json'); do
+            url="${base}${f#pu            url="${base}${f#pu            url="${base}${f#pu            ul")
+            if [ "$status"   "2            if [ "$       echo "OK                       
+                                    $statu                                     f               e
           exit $fail

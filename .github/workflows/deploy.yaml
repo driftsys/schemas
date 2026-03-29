@@ -18,7 +18,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Prepare pages
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Build site
         run: ./scripts/publish
 
       - name: Upload pages artifact
@@ -30,18 +34,19 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
 
-      - name: Verify published schemas
+      - name: Verify published URLs
         run: |
           base="${{ steps.deployment.outputs.page_url }}"
           fail=0
-          for f in $(find public -name 'v*.json'); do
-            url="${base}${f#public/}"
-            status=$(curl -sL -o /dev/null -w '%{http_code}' "$url")
-            if [ "$status" = "200" ]; then
+
+          for path in index.html index.md project/index.html project/index.md markspec/index.html markspec/index.md; do
+                                                                                   tt                             if                     ];                         "OK $                                      ho "FAIL $ur                                f                    
+               
+                            blic                            blic                  pu      "
+                                  dev/                                           if [ "$status" = "200" ]; then
               echo "OK $url"
-            else
-              echo "FAIL $url (HTTP $status)"
-              fail=1
+              se
+              echo              echo              ec        fail=1
             fi
           done
           exit $fail

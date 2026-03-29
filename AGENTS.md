@@ -1,33 +1,56 @@
 # AGENTS.md
 
 This file provides guidance to AI coding agents when working with code in this
-repository.
+repository. It is repo-internal and never published to GitHub Pages.
 
 ## What This Repo Is
 
 A collection of JSON Schemas for the Driftsys project. Schemas are published to
-GitHub Pages at `https://driftsys.github.io/schemas/` and referenced from
-project files for editor autocompletion and validation.
+GitHub Pages at `https://driftsys.github.io/schemas/` in three surfaces:
 
-There is no build system and no runtime dependencies. Schemas are validated with
-bash_unit tests that use ajv-cli.
+- `*.html` — human-readable contract pages
+- `*.md` — agent-consumable raw markdown contracts (same content)
+- `v*.json` — JSON Schema files for validation
+
+## Published Site Model
+
+Each `README.md` at the root, `project/`, and `markspec/` levels is the contract
+page for that domain. The build script renders them to HTML and copies them as
+raw markdown.
+
+| Surface  | URL pattern                | Source                    |
+| -------- | -------------------------- | ------------------------- |
+| Human    | `/<domain>/`               | `<domain>/README.md`      |
+| Agent    | `/<domain>/index.md`       | `<domain>/README.md`      |
+| Schema   | `/<domain>/<name>/v1.json` | `<domain>/<name>/v1.json` |
+| Hub      | `/`                        | `README.md`               |
+| Hub (md) | `/index.md`                | `README.md`               |
+
+`AGENTS.md` and `CONTRIBUTING.md` are repo-internal only — never published.
 
 ## Repository Layout
 
-Each schema lives in its own directory:
-
 ```text
-<schema-name>/
-├── README.md       ← field documentation, examples, design decisions
-├── v<N>.json       ← JSON Schema (draft-07)
-└── tests/
-    ├── test_v<N>.sh    ← bash_unit tests
-    ├── minimal.json    ← valid/invalid JSON fixtures
-    └── ...
+schemas/
+├── README.md              ← dual-audience hub (published)
+├── AGENTS.md              ← repo-internal (this file, never published)
+├── CONTRIBUTING.md        ← repo-internal (never published)
+├── docs/
+│   └── specification.md   ← normative site specification
+├── project/
+│   ├── README.md          ← dual-audience contract page (published)
+│   ├── v1.json
+│   └── tests/
+├── markspec/
+│   ├── README.md          ← dual-audience contract page (published)
+│   ├── entry/v1.json
+│   ├── lock/v1.json
+│   └── ...
+├── scripts/
+│   ├── publish            ← thin wrapper
+│   └── build-site.ts      ← Deno site builder (refhub style)
+└── public/                ← generated, gitignored
 ```
-
-Currently the only schema is `project/v1.json` — a minimal, flat project
-manifest.
 
 ## Schema Conventions
 
@@ -35,14 +58,10 @@ manifest.
   (`http://json-schema.org/draft-07/schema#`).
 - `$id` must match the GitHub Pages URL:
   `https://driftsys.github.io/schemas/<name>/v<N>.json`.
-- Versioning is `v1`, `v2`, etc. Breaking changes (new required fields, removed
-  fields, changed constraints) require a new major version. Non-breaking
-  additions (new optional fields) are added in place.
-- Field names align with Cargo.toml and package.json conventions — no new
-  vocabulary.
-- `additionalProperties: false` is used on the root object to keep manifests
-  strict.
-- `$schema` / `#:schema` are editor hints, not project data.
+- Versioning is `v1`, `v2`, etc. Breaking changes require a new major version.
+  Non-breaking additions are added in place.
+- Field names align with Cargo.toml and package.json conventions.
+- `additionalProperties: false` is used on root objects.
 
 ## Commands
 
@@ -50,10 +69,9 @@ All commands use [just](https://github.com/casey/just):
 
 - `just fmt` — format all files with dprint
 - `just check` — run all checks (test + lint)
-- `just test` — run bash_unit tests (schema compilation + valid/invalid fixtures
-  via ajv-cli)
+- `just test` — run bash_unit tests
 - `just lint` — run markdownlint and dprint check
-- `just build` — copy all schema files (and only schema files) to `public/`
+- `just build` — generate the site to `public/`
 
 Always run `just check` before pushing.
 
@@ -68,25 +86,12 @@ Use [Conventional Commits](https://www.conventionalcommits.org/) format:
 - Markdown: wrap prose at 80 columns, use `-` for unordered lists (not `*`).
 - Indent with 2 spaces everywhere.
 
-## Publishing
-
-`scripts/publish` copies all `v*.json` schema files to `public/`, preserving
-directory structure. Only schema files end up in `public/` — no docs, config, or
-tooling files. The `public/` directory is gitignored. CI runs this script before
-deploying to GitHub Pages.
-
 ## Testing
 
-Each schema directory has a `tests/` folder with:
-
-- JSON fixtures (`*.json`) — valid and invalid examples
-- A bash_unit test file (`test_v<N>.sh`) that runs ajv-cli against those
-  fixtures
-
-When adding or modifying a schema, add or update the corresponding test fixtures
-and bash_unit tests.
+Each schema directory has a `tests/` folder with JSON fixtures and bash_unit
+tests. When adding or modifying a schema, update the corresponding tests.
 
 ## Editing Schemas
 
-When modifying a schema, keep the corresponding `README.md` in sync — it
-documents every field, the ecosystem mapping table, and design decisions.
+When modifying a schema, keep the corresponding `README.md` in sync — it is the
+published contract page.

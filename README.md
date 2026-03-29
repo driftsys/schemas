@@ -1,14 +1,23 @@
-# driftsys/schemas
+# DriftSys Schema Contracts
 
-JSON Schemas for Driftsys projects. Each schema is published to GitHub Pages and
-can be referenced directly from project files for editor autocompletion and
-validation.
+Validation schemas and agent contracts for DriftSys projects. Each schema is
+published to GitHub Pages and available as HTML for humans and raw markdown for
+agents.
 
-## Schemas
+## Discovery Protocol
 
-| Schema              | URL                                                  | Describes                                         |
-| ------------------- | ---------------------------------------------------- | ------------------------------------------------- |
-| [project](project/) | `https://driftsys.github.io/schemas/project/v1.json` | Project manifest (`project.toml`, `project.json`) |
+1. Identify the schema domain (project or markspec).
+2. Navigate to the domain contract page.
+3. Use the schema index to find the matching `v1.json`.
+4. Validate payload against the schema before processing.
+5. Parse required fields first, optional fields second.
+
+## Contracts
+
+| Domain   | Human                  | Agent                                    | Schemas         |
+| -------- | ---------------------- | ---------------------------------------- | --------------- |
+| Project  | [project/](project/)   | [project/README.md](project/README.md)   | project/v1.json |
+| MarkSpec | [markspec/](markspec/) | [markspec/README.md](markspec/README.md) | 12 schemas      |
 
 ## Usage
 
@@ -61,22 +70,15 @@ Uses the `$schema` property — supported natively by VS Code and IntelliJ.
 }
 ```
 
-## Versioning
+## Failure Modes
 
-Schemas are versioned as `v1`, `v2`, etc. A new major version is published when
-breaking changes are introduced (required fields added, fields removed, value
-constraints changed). Non-breaking additions (new optional fields) are added in
-place.
+- **unsupported-version** — schema version is not recognized. Stop processing.
+- **schema-unavailable** — schema URL cannot be fetched. Return error.
+- **validation-failed** — payload does not match schema. Reject payload.
+- **unknown-payload-kind** — payload kind cannot be determined. Return error.
 
-## Adding a Schema
+## Version Policy
 
-Each schema lives in its own directory with a `README.md` explaining the fields,
-a `v<N>.json` file containing the JSON Schema, and a `tests/` folder with
-validation fixtures.
-
-```text
-<schema-name>/
-├── README.md       ← field documentation, examples, design decisions
-├── v1.json         ← JSON Schema
-└── tests/          ← bash_unit tests and JSON fixtures
-```
+- Breaking changes create a new major version path (`v2.json`).
+- Non-breaking additions stay in the current major version.
+- Consumers should pin to a major version.

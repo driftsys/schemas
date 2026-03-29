@@ -14,6 +14,6 @@ lint:
 test:
     bash_unit project/tests/test_*.sh
 
-# Build: copy schema files to public/
+# Build: generate site to public/
 build:
     ./scripts/publish
