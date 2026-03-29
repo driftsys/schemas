@@ -16,9 +16,9 @@ lives — nothing more. Validate payloads against this schema before processing.
 
 ## Schema Index
 
-| Schema path     | What it describes | Stable key |
-| --------------- | ----------------- | ---------- |
-| project/v1.json | Project manifest  | `name`     |
+| Schema path        | What it describes | Stable key |
+| ------------------ | ----------------- | ---------- |
+| [v1.json](v1.json) | Project manifest  | `name`     |
 
 ## Validation Contract
 

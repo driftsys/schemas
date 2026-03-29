@@ -241,13 +241,23 @@ function renderMarkdown(md: string): string {
 }
 
 function inlineFormat(s: string): string {
-  // Links: [text](url)
-  s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
+  // Links: [text](url) — rewrite README.md hrefs to directory paths for HTML nav
+  s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_m, text, href) => {
+    href = rewriteHref(href);
+    return `<a href="${href}">${text}</a>`;
+  });
   // Bold: **text**
   s = s.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
   // Inline code: `text`
   s = s.replace(/`([^`]+)`/g, "<code>$1</code>");
   return s;
+}
+
+/** Rewrite README.md links to directory paths so HTML nav works on Pages. */
+function rewriteHref(href: string): string {
+  if (href === "README.md") return "./";
+  if (href.endsWith("/README.md")) return href.slice(0, -"README.md".length);
+  return href;
 }
 
 function renderTable(lines: string[]): string {
@@ -355,7 +365,8 @@ async function main(): Promise<void> {
 
     await writeFile(`${outPath}/index.html`, layoutHtml(page.title, html, page.depth, page.breadcrumbs));
     await writeFile(`${outPath}/index.md`, md);
-    filesWritten += 2;
+    await writeFile(`${outPath}/README.md`, md);
+    filesWritten += 3;
   }
 
   // --- Schema JSON files ---

@@ -14,10 +14,10 @@ agents.
 
 ## Contracts
 
-| Domain   | Human                  | Agent                                  | Schemas         |
-| -------- | ---------------------- | -------------------------------------- | --------------- |
-| Project  | [project/](project/)   | [project/index.md](project/index.md)   | project/v1.json |
-| MarkSpec | [markspec/](markspec/) | [markspec/index.md](markspec/index.md) | 12 schemas      |
+| Domain   | Human                  | Agent                                    | Schemas         |
+| -------- | ---------------------- | ---------------------------------------- | --------------- |
+| Project  | [project/](project/)   | [project/README.md](project/README.md)   | project/v1.json |
+| MarkSpec | [markspec/](markspec/) | [markspec/README.md](markspec/README.md) | 12 schemas      |
 
 ## Usage
 

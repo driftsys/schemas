@@ -15,20 +15,20 @@ the matching schema before processing.
 
 ## Schema Index
 
-| Schema path                 | What it describes                          | Stable key                |
-| --------------------------- | ------------------------------------------ | ------------------------- |
-| lock/v1.json                | Frozen sidecar metadata (`.markspec.lock`) | ULID map key              |
-| link-target/v1.json         | Shared resolved-link target object         | `displayId`               |
-| entry/v1.json               | Typed entry detail payload                 | `id` (ULID) / `displayId` |
-| reference/v1.json           | Reference entry payload                    | `id` (ULID) / `displayId` |
-| index/v1.json               | Entry listing payload                      | `entries[].displayId`     |
-| search/v1.json              | Search records for client indexing         | `displayId`               |
-| traceability-matrix/v1.json | Full traceability matrix rows              | `rows[].displayId`        |
-| traceability-graph/v1.json  | Graph nodes and edges                      | `nodes[].id`              |
-| coverage/v1.json            | Coverage summary and gaps                  | `gaps[].displayId`        |
-| bom/v1.json                 | Architecture/BOM tree                      | `bomNode.displayId`       |
-| deps/v1.json                | Cross-project dependency payload           | `refs[].from/to`          |
-| diagnostics/v1.json         | Validation and build diagnostics           | `code + location`         |
+| Schema path                                                | What it describes                          | Stable key                |
+| ---------------------------------------------------------- | ------------------------------------------ | ------------------------- |
+| [lock/v1.json](lock/v1.json)                               | Frozen sidecar metadata (`.markspec.lock`) | ULID map key              |
+| [link-target/v1.json](link-target/v1.json)                 | Shared resolved-link target object         | `displayId`               |
+| [entry/v1.json](entry/v1.json)                             | Typed entry detail payload                 | `id` (ULID) / `displayId` |
+| [reference/v1.json](reference/v1.json)                     | Reference entry payload                    | `id` (ULID) / `displayId` |
+| [index/v1.json](index/v1.json)                             | Entry listing payload                      | `entries[].displayId`     |
+| [search/v1.json](search/v1.json)                           | Search records for client indexing         | `displayId`               |
+| [traceability-matrix/v1.json](traceability-matrix/v1.json) | Full traceability matrix rows              | `rows[].displayId`        |
+| [traceability-graph/v1.json](traceability-graph/v1.json)   | Graph nodes and edges                      | `nodes[].id`              |
+| [coverage/v1.json](coverage/v1.json)                       | Coverage summary and gaps                  | `gaps[].displayId`        |
+| [bom/v1.json](bom/v1.json)                                 | Architecture/BOM tree                      | `bomNode.displayId`       |
+| [deps/v1.json](deps/v1.json)                               | Cross-project dependency payload           | `refs[].from/to`          |
+| [diagnostics/v1.json](diagnostics/v1.json)                 | Validation and build diagnostics           | `code + location`         |
 
 ## Validation Contract
 

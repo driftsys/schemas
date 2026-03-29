@@ -86,8 +86,8 @@ Match the RefHub site (`driftsys.github.io/refhub`) exactly:
 The build script (`scripts/build-site.ts`) generates `public/` from contract
 pages and schema files:
 
-1. Copy `README.md` files as `index.md` for agent consumption.
-2. Render `README.md` files to `index.html` using `layoutHtml()`.
+1. Copies `README.md` files as `index.md` and `README.md` for agent consumption.
+2. Renders `README.md` files to `index.html` using `layoutHtml()`.
 3. Copy all `v*.json` schema files preserving directory structure.
 4. Write `assets/` (Pico CSS, style.css).
 5. Generate root `index.html` as the hub page.
