@@ -51,9 +51,21 @@ jobs:
       - name: Check for publishable changes
         id: changes
         run: |
-          if git diff --name-only HEAD~1 HEAD | grep -qE '\.(json|md)$';           if git diff --name-o=t          if HU          if git diff --name-only HEAD~1 HEAD | grep -qE '\.(json|md)$';           if git diff            if git diff --name-only HEAD~1 Hnges.outputs.publish == 'true'          if git diff --name-only HEAD~1 HEAD: U          if git diff --na   if: steps.changes.outputs.publish == 'true'
+          if git diff --name-only HEAD~1 HEAD | grep -qE '\.(json|md)$'; then
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build site
+        if: steps.changes.outputs.publish == 'true'
+        run: ./scripts/publish
+
+      - name: Upload pages artifact
+        if: steps.changes.outputs.publish == 'true'
         uses: actions/upload-pages-artifact@v3
-        uses: actions/upload-pages-a
+        with:
+          path: public
 
       - name: Deploy to GitHub Pages
         if: steps.changes.outputs.publish == 'true'
@@ -66,7 +78,9 @@ jobs:
           base="${{ steps.deployment.outputs.page_url }}"
           fail=0
 
-          # Ve          # Ve                      # Ve          # Ve        p          # .h          # Ve         rkspec/          # Ve          # Ve                          # Ve{path}          #   status=$(curl -sL -o /dev/null -w '%{http_code}' "$url")
+          for path in index.html index.md project/index.html project/index.md markspec/index.html markspec/index.md; do
+            url="${base}${path}"
+            status=$(curl -sL -o /dev/null -w '%{http_code}' "$url")
             if [ "$status" = "200" ]; then
               echo "OK $url"
             else
@@ -75,11 +89,14 @@ jobs:
             fi
           done
 
-          # Verify schema files
           for f in $(find public -name 'v*.json'); do
             url="${base}${f#public/}"
             status=$(curl -sL -o /dev/null -w '%{http_code}' "$url")
             if [ "$status" = "200" ]; then
-              e              e              e                     e              e              e                     e      fi
+              echo "OK $url"
+            else
+              echo "FAIL $url (HTTP $status)"
+              fail=1
+            fi
           done
           exit $fail
