@@ -1,6 +1,8 @@
-name: Force deploy schemas
+name: Deploy
 
 on:
+  push:
+    tags: ["v*"]
   workflow_dispatch:
 
 permissions:
@@ -8,35 +10,52 @@ permissions:
   pages: write
   id-token: write
 
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
+  build:
+    name: Build site
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - run: ./scripts/publish
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
   deploy:
     name: Deploy to GitHub Pages
+    needs: build
     runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v4
-
-      - uses: denoland/setup-deno@v2
-        with:
-          deno-version: v2.x
-
-      - name: Build site
-        run: ./scripts/publish
-
-      - name: Upload pages artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: _site
-
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
 
-      - name: Verify published URLs
+  verify:
+    name: Verify published URLs
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - run: ./scripts/publish
+      - name: Check URLs
         run: |
-          base="${{ steps.deployment.outputs.page_url }}"
+          base="https://driftsys.github.io/schemas/"
           fail=0
 
           for path in index.html index.md project/index.html project/index.md markspec/index.html markspec/index.md; do

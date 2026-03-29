@@ -1,102 +1,74 @@
+name: CI
+
 on:
   push:
     branches: [main]
   pull_request:
-    branches: [main]
 
 permissions:
   contents: read
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
-  validate:
-    name: Validate schemas
+  lint:
+    name: Lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: dprint/check@v2.3
 
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
       - name: Install bash_unit
         run: |
           curl -sL https://raw.githubusercontent.com/pgrange/bash_unit/master/install.sh | bash
           sudo mv bash_unit /usr/local/bin/
-
       - name: Test schemas
         run: bash_unit project/tests/test_*.sh
 
-      - name: Install dprint
-        run: curl -fsSL https://dprint.dev/install.sh | sh
-
-      - name: Check formatting
-        run: ~/.dprint/bin/dprint check
-
-  deploy:
-    name: Deploy to GitHub Pages
-    needs: validate
-    if: github.ref == 'refs/heads/main'
+  build:
+    name: Build
     runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
-
       - uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
+      - run: ./scripts/publish
 
-      - name: Check for publishable changes
-        id: changes
-        run: |
-          if git diff --name-only HEAD~1 HEAD | grep -qE '\.(json|md)$'; then
-            echo "publish=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "publish=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Build site
-        if: steps.changes.outputs.publish == 'true'
-        run: ./scripts/publish
-
-      - name: Upload pages artifact
-        if: steps.changes.outputs.publish == 'true'
-        uses: actions/upload-pages-artifact@v3
+  convco:
+    name: Conventional commits
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
         with:
-          path: _site
-
-      - name: Deploy to GitHub Pages
-        if: steps.changes.outputs.publish == 'true'
-        id: deployment
-        uses: actions/deploy-pages@v4
-
-      - name: Verify published URLs
-        if: steps.changes.outputs.publish == 'true'
+          fetch-depth: 0
+      - name: Install convco
         run: |
-          base="${{ steps.deployment.outputs.page_url }}"
-          fail=0
+          curl -sSfL https://github.com/convco/convco/releases/latest/download/convco-ubuntu.zip -o /tmp/convco.zip
+          unzip -o /tmp/convco.zip -d /usr/local/bin
+          chmod +x /usr/local/bin/convco
+      - name: Check commit messages
+        run: convco check ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}
 
-          for path in index.html index.md project/index.html project/index.md markspec/index.html markspec/index.md; do
-            url="${base}${path}"
-            status=$(curl -sL -o /dev/null -w '%{http_code}' "$url")
-            if [ "$status" = "200" ]; then
-              echo "OK $url"
-            else
-              echo "FAIL $url (HTTP $status)"
-              fail=1
+  ci:
+    name: CI
+    if: always()
+    needs: [lint, test, build, convco]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check results
+        run: |
+          results="${{ join(needs.*.result, ' ') }}"
+          for r in $results; do
+            if [ "$r" = "failure" ] || [ "$r" = "cancelled" ]; then
+              exit 1
             fi
           done
 
-          for f in $(find _site -name 'v*.json'); do
-            url="${base}${f#_site/}"
-            status=$(curl -sL -o /dev/null -w '%{http_code}' "$url")
-            if [ "$status" = "200" ]; then
-              echo "OK $url"
-            else
-              echo "FAIL $url (HTTP $status)"
-              fail=1
-            fi
-          done
-          exit $fail
