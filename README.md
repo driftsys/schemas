@@ -14,12 +14,30 @@ agents.
 4. Validate payload against the schema before processing.
 5. Parse required fields first, optional fields second.
 
+## Schema Index
+
+| Contract              | Schema                                                                       | Description                                |
+| --------------------- | ---------------------------------------------------------------------------- | ------------------------------------------ |
+| [project](project/)   | [project/v1.json](project/v1.json)                                           | Project manifest                           |
+| [markspec](markspec/) | [markspec/lock/v1.json](markspec/lock/v1.json)                               | Frozen sidecar metadata (`.markspec.lock`) |
+| [markspec](markspec/) | [markspec/link-target/v1.json](markspec/link-target/v1.json)                 | Shared resolved-link target object         |
+| [markspec](markspec/) | [markspec/entry/v1.json](markspec/entry/v1.json)                             | Typed entry detail payload                 |
+| [markspec](markspec/) | [markspec/reference/v1.json](markspec/reference/v1.json)                     | Reference entry payload                    |
+| [markspec](markspec/) | [markspec/index/v1.json](markspec/index/v1.json)                             | Entry listing payload                      |
+| [markspec](markspec/) | [markspec/search/v1.json](markspec/search/v1.json)                           | Search records for client indexing         |
+| [markspec](markspec/) | [markspec/traceability-matrix/v1.json](markspec/traceability-matrix/v1.json) | Full traceability matrix rows              |
+| [markspec](markspec/) | [markspec/traceability-graph/v1.json](markspec/traceability-graph/v1.json)   | Graph nodes and edges                      |
+| [markspec](markspec/) | [markspec/coverage/v1.json](markspec/coverage/v1.json)                       | Coverage summary and gaps                  |
+| [markspec](markspec/) | [markspec/bom/v1.json](markspec/bom/v1.json)                                 | Architecture/BOM tree                      |
+| [markspec](markspec/) | [markspec/deps/v1.json](markspec/deps/v1.json)                               | Cross-project dependency payload           |
+| [markspec](markspec/) | [markspec/diagnostics/v1.json](markspec/diagnostics/v1.json)                 | Validation and build diagnostics           |
+
 ## Contracts
 
-| Domain   | Human                  | Agent                                    | Schemas         |
-| -------- | ---------------------- | ---------------------------------------- | --------------- |
-| Project  | [project/](project/)   | [project/README.md](project/README.md)   | project/v1.json |
-| MarkSpec | [markspec/](markspec/) | [markspec/README.md](markspec/README.md) | 12 schemas      |
+| Contract               | Description                              |
+| ---------------------- | ---------------------------------------- |
+| [project/](project/)   | Minimal flat project manifest            |
+| [markspec/](markspec/) | MarkSpec site API artifacts (12 schemas) |
 
 ## Usage
 
@@ -84,3 +102,9 @@ Uses the `$schema` property — supported natively by VS Code and IntelliJ.
 - Breaking changes create a new major version path (`v2.json`).
 - Non-breaking additions stay in the current major version.
 - Consumers should pin to a major version.
+
+<!-- git-std:bootstrap -->
+
+## Post-clone setup
+
+Run `./bootstrap` after `git clone` or `git worktree add`.

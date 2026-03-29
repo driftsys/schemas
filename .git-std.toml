@@ -1,0 +1,5 @@
+[version]
+scheme = "semver"
+
+[commit]
+scopes = "auto"

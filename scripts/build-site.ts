@@ -44,6 +44,7 @@ function layoutHtml(
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="${root}/assets/vendor/pico.classless.min.css">
   <link rel="stylesheet" href="${root}/assets/style.css">
+  <link rel="alternate" type="text/markdown" href="index.md">
 </head>
 <body>
   <header>
@@ -136,6 +137,11 @@ table code { font-size: 0.8rem; }
 // ---------------------------------------------------------------------------
 
 function renderMarkdown(md: string): string {
+  // Remove badge lines ([![...](badge-url)](link-url))
+  md = md.replace(/^\s*\[!\[.*?\]\(https?:\/\/img\.shields\.io\/.*?\)\]\(.*?\)\s*$/gm, "");
+  // Also remove simple badges without outer link
+  md = md.replace(/^\s*!\[.*?\]\(https?:\/\/img\.shields\.io\/.*?\)\s*$/gm, "");
+
   const lines = md.split("\n");
   const out: string[] = [];
   let i = 0;
@@ -243,7 +249,7 @@ function renderMarkdown(md: string): string {
 function inlineFormat(s: string): string {
   // Links: [text](url) — rewrite README.md hrefs to directory paths for HTML nav
   s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_m, text, href) => {
-    href = rewriteHref(href);
+    href = rewriteHref(href, text);
     return `<a href="${href}">${text}</a>`;
   });
   // Bold: **text**
@@ -253,8 +259,10 @@ function inlineFormat(s: string): string {
   return s;
 }
 
-/** Rewrite README.md links to directory paths so HTML nav works on Pages. */
-function rewriteHref(href: string): string {
+/** Rewrite README.md links for Pages: human links get directory paths,
+ *  agent links (display text contains README.md) keep README.md. */
+function rewriteHref(href: string, linkText: string): string {
+  if (linkText.includes("README.md")) return href;
   if (href === "README.md") return "./";
   if (href.endsWith("/README.md")) return href.slice(0, -"README.md".length);
   return href;
@@ -347,7 +355,7 @@ const CONTRACT_PAGES: ContractPage[] = [
 
 async function main(): Promise<void> {
   const root = new URL("../", import.meta.url).pathname.replace(/\/$/, "");
-  const outDir = `${root}/public`;
+  const outDir = `${root}/_site`;
 
   // Clean output
   try {
@@ -356,17 +364,22 @@ async function main(): Promise<void> {
 
   let filesWritten = 0;
 
-  // --- Contract pages (HTML + MD) ---
+  // --- Contract pages (HTML + index.md) ---
   for (const page of CONTRACT_PAGES) {
     const src = `${root}/${page.srcReadme}`;
     const md = await Deno.readTextFile(src);
     const html = renderMarkdown(md);
     const outPath = page.outDir ? `${outDir}/${page.outDir}` : outDir;
 
+    // Agent markdown: rewrite README.md links to index.md, strip badges
+    const agentMd = md
+      .replace(/\(([^)]*?)README\.md\)/g, "($1index.md)")
+      .replace(/^\s*\[!\[.*?\]\(https?:\/\/img\.shields\.io\/.*?\)\]\(.*?\)\s*$/gm, "")
+      .replace(/^\s*!\[.*?\]\(https?:\/\/img\.shields\.io\/.*?\)\s*$/gm, "");
+
     await writeFile(`${outPath}/index.html`, layoutHtml(page.title, html, page.depth, page.breadcrumbs));
-    await writeFile(`${outPath}/index.md`, md);
-    await writeFile(`${outPath}/README.md`, md);
-    filesWritten += 3;
+    await writeFile(`${outPath}/index.md`, agentMd);
+    filesWritten += 2;
   }
 
   // --- Schema JSON files ---
@@ -374,7 +387,7 @@ async function main(): Promise<void> {
     const files: string[] = [];
     for await (const entry of Deno.readDir(dir)) {
       const path = `${dir}/${entry.name}`;
-      if (entry.isDirectory && entry.name !== "public" && entry.name !== ".git" && entry.name !== "node_modules" && entry.name !== "docs" && entry.name !== "scripts" && entry.name !== ".github" && entry.name !== ".vscode" && entry.name !== "assets") {
+      if (entry.isDirectory && entry.name !== "_site" && entry.name !== "public" && entry.name !== ".git" && entry.name !== "node_modules" && entry.name !== "docs" && entry.name !== "scripts" && entry.name !== ".github" && entry.name !== ".vscode" && entry.name !== "assets") {
         files.push(...await findSchemas(path));
       } else if (entry.isFile && /^v\d+\.json$/.test(entry.name)) {
         files.push(path);

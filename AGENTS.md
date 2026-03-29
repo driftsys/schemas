@@ -9,14 +9,15 @@ A collection of JSON Schemas for the Driftsys project. Schemas are published to
 GitHub Pages at `https://driftsys.github.io/schemas/` in three surfaces:
 
 - `*.html` — human-readable contract pages
-- `*.md` — agent-consumable raw markdown contracts (same content)
+- `index.md` — agent-consumable raw markdown contracts (discoverable via
+  `<link rel="alternate" type="text/markdown" href="index.md">`)
 - `v*.json` — JSON Schema files for validation
 
 ## Published Site Model
 
 Each `README.md` at the root, `project/`, and `markspec/` levels is the contract
-page for that domain. The build script renders them to HTML and copies them as
-raw markdown.
+page for that domain. The build script renders them to HTML and generates
+`index.md` for agents (with `README.md` links rewritten to `index.md`).
 
 | Surface  | URL pattern                | Source                    |
 | -------- | -------------------------- | ------------------------- |
@@ -49,7 +50,7 @@ schemas/
 ├── scripts/
 │   ├── publish            ← thin wrapper
 │   └── build-site.ts      ← Deno site builder (refhub style)
-└── public/                ← generated, gitignored
+└── _site/                 ← generated, gitignored
 ```
 
 ## Schema Conventions
@@ -71,7 +72,7 @@ All commands use [just](https://github.com/casey/just):
 - `just check` — run all checks (test + lint)
 - `just test` — run bash_unit tests
 - `just lint` — run markdownlint and dprint check
-- `just build` — generate the site to `public/`
+- `just build` — generate the site to `_site/`
 
 Always run `just check` before pushing.
 
@@ -95,3 +96,9 @@ tests. When adding or modifying a schema, update the corresponding tests.
 
 When modifying a schema, keep the corresponding `README.md` in sync — it is the
 published contract page.
+
+<!-- git-std:bootstrap -->
+
+## Post-clone setup
+
+Run `./bootstrap` after `git clone` or `git worktree add`.

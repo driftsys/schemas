@@ -29,7 +29,7 @@ schemas/
 ├── scripts/
 │   ├── publish                        ← thin wrapper
 │   └── build-site.ts                  ← Deno site builder
-└── public/                            ← generated, gitignored, never committed
+└── _site/                             ← generated, gitignored, never committed
     ├── index.html                     ← generated from README.md
     ├── index.md                       ← copied from README.md
     ├── project/
@@ -83,15 +83,18 @@ Match the RefHub site (`driftsys.github.io/refhub`) exactly:
 
 ## Publish Pipeline
 
-The build script (`scripts/build-site.ts`) generates `public/` from contract
+The build script (`scripts/build-site.ts`) generates `_site/` from contract
 pages and schema files:
 
-1. Copies `README.md` files as `index.md` and `README.md` for agent consumption.
-2. Renders `README.md` files to `index.html` using `layoutHtml()`.
+1. Generates `index.md` for agent consumption (links rewritten from `README.md`
+   to `index.md`, badges stripped).
+2. Renders `README.md` files to `index.html` using `layoutHtml()`. Each HTML
+   page includes `<link rel="alternate" type="text/markdown" href="index.md">`
+   for agent discovery.
 3. Copy all `v*.json` schema files preserving directory structure.
 4. Write `assets/` (Pico CSS, style.css).
 5. Generate root `index.html` as the hub page.
-6. Never copy `AGENTS.md` or `CONTRIBUTING.md` into `public/`.
+6. Never copy `AGENTS.md` or `CONTRIBUTING.md` into `_site/`.
 
 The existing bash `scripts/publish` calls the Deno build script.
 

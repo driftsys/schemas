@@ -36,8 +36,8 @@ jobs:
             fi
           done
 
-          for f in $(find public -name 'v*.json'); do
-            url="${base}${f#public/}"
+          for f in $(find _site -name 'v*.json'); do
+            url="${base}${f#_site/}"
             status=$(curl -sL -o /dev/null -w '%{http_code}' "$url")
             if [ "$status" = "200" ]; then
               echo "OK $url"
