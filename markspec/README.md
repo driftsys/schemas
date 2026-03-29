@@ -28,7 +28,6 @@ the matching schema before processing.
 | [markspec/coverage](coverage/README.md)                       | [v1](coverage/v1.json)            | Coverage summary and gaps                  | `gaps[].displayId`        |
 | [markspec/bom](bom/README.md)                                 | [v1](bom/v1.json)                 | BOM index (component summaries)            | `components[].displayId`  |
 | [markspec/component](component/README.md)                     | [v1](component/v1.json)           | BOM component detail payload               | `id` (ULID) / `displayId` |
-| [markspec/deps](deps/README.md)                               | [v1](deps/v1.json)                | Cross-project dependency payload           | `refs[].from/to`          |
 | [markspec/diagnostics](diagnostics/README.md)                 | [v1](diagnostics/v1.json)         | Validation and build diagnostics           | `code + location`         |
 
 ## Validation Contract

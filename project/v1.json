@@ -47,7 +47,14 @@
       "type": "array",
       "items": { "type": "string" },
       "uniqueItems": true,
-      "description": "Discovery tags."
+      "description": "Discovery tags. Free text, not validated."
+    },
+    "labels": {
+      "type": "array",
+      "items": { "type": "string" },
+      "uniqueItems": true,
+      "description": "Process-defined labels. Vocabulary is governed by the process project and validated at compile time.",
+      "examples": [["ASIL-D", "safety-relevant"]]
     },
     "authors": {
       "type": "array",
@@ -78,21 +85,51 @@
         "https://github.com/nicegui/nicegui#develop"
       ]
     },
+    "process": {
+      "type": "array",
+      "description": "Process projects this project conforms to. Defines governance: entry types, attributes, constraints, and policies. Multiple processes are supported; constraints accumulate (most restrictive wins).",
+      "items": { "$ref": "#/$defs/projectRef" },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "dependencies": {
+      "type": "array",
+      "description": "Projects this project uses. Dependencies participate in the traceability chain: the compiler expects entries to link across the boundary and warns on coverage gaps.",
+      "items": { "$ref": "#/$defs/projectRef" },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "references": {
+      "type": "array",
+      "description": "Registries and external sources this project cites. References are traceability leaves: the compiler resolves links to them but expects no deeper chain.",
+      "items": { "$ref": "#/$defs/projectRef" },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "classification": {
+      "type": "string",
+      "default": "unclassified",
+      "enum": [
+        "unclassified",
+        "internal",
+        "confidential",
+        "restricted",
+        "secret",
+        "top-secret"
+      ],
+      "description": "Data classification level (ISO 27001 / government compatible). Ascending sensitivity. Defaults to unclassified."
+    },
     "metadata": {
       "type": "object",
-      "description": "Freeform key-value block for org-specific information. The standard never validates contents.",
-      "additionalProperties": true
-    },
-    "config": {
-      "type": "object",
-      "description": "Freeform key-value block for tooling configuration. Tools namespace themselves as keys.",
+      "description": "Freeform key-value block for org-specific information. Available to templates and tools but not validated by the schema.",
       "additionalProperties": true
     }
   },
   "$defs": {
     "categoryValue": {
       "type": "string",
-      "enum": [
+      "description": "Project category. Values are informative and may be defined by a process project.",
+      "examples": [
         "manifest",
         "specification",
         "application",
@@ -102,8 +139,28 @@
         "binary",
         "distribution",
         "configuration"
-      ],
-      "description": "Project category."
+      ]
+    },
+    "projectRef": {
+      "type": "object",
+      "description": "Reference to an external project.",
+      "required": ["url"],
+      "additionalProperties": false,
+      "properties": {
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "Repository or published site URL."
+        },
+        "version": {
+          "type": "string",
+          "description": "Version of the referenced project."
+        },
+        "name": {
+          "type": "string",
+          "description": "Short display name for this reference."
+        }
+      }
     }
   }
 }
