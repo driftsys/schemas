@@ -1,5 +1,7 @@
 # DriftSys Schema Contracts
 
+[![Pages](https://img.shields.io/badge/Pages-driftsys.github.io%2Fschemas-0072b2)](https://driftsys.github.io/schemas/)
+
 Validation schemas and agent contracts for DriftSys projects. Each schema is
 published to GitHub Pages and available as HTML for humans and raw markdown for
 agents.
