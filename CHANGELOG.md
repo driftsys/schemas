@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.3.0] (2026-03-29)
+
+### Features
+
+- remove generated timestamps, drop deps schema, reorder schema index
+  ([b36f8be])
+
+### Documentation
+
+- add changelog generated with git-std ([84f7263])
+
+[0.3.0]: https://github.com/driftsys/schemas/compare/v0.2.0...v0.3.0
+[b36f8be]: https://github.com/driftsys/schemas/commit/b36f8be
+[84f7263]: https://github.com/driftsys/schemas/commit/84f7263
+
 ## [0.2.0] (2026-03-30)
 
 ### Features
